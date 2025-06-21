@@ -1,36 +1,29 @@
-pip install tensorflow keras numpy matplotlib
-pip install extra-keras-datasets
-
-from tensorflow.keras.datasets import mnist  
-from tensorflow.keras.utils import to_categorical
-from extra_keras_datasets import emnist
-
-(x_train, y_train), (x_test, y_test) = emnist.load_data(type='letters')
-
-(x_train, y_train), (x_test, y_test) = mnist.load_data()
 
 
-x_train = x_train.reshape(-1, 28, 28, 1).astype('float32') / 255.0
-x_test = x_test.reshape(-1, 28, 28, 1).astype('float32') / 255.0
+from sklearn.datasets import load_digits
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score, classification_report
 
 
-y_train = to_categorical(y_train, 10)
-y_test = to_categorical(y_test, 10)
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
+digits = load_digits()
+X = digits.data
+y = digits.target
 
-model = Sequential([
-    Conv2D(32, (3,3), activation='relu', input_shape=(28,28,1)),
-    MaxPooling2D(2,2),
-    Dropout(0.25),
-    Conv2D(64, (3,3), activation='relu'),
-    MaxPooling2D(2,2),
-    Flatten(),
-    Dense(128, activation='relu'),
-    Dropout(0.5),
-    Dense(10, activation='softmax') 
-])
-model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-model.fit(x_train, y_train, epochs=5, validation_data=(x_test, y_test))
-test_loss, test_acc = model.evaluate(x_test, y_test)
-print("Test accuracy:", test_acc)
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+model = LogisticRegression(max_iter=1000)
+model.fit(X_train, y_train)
+
+
+y_pred = model.predict(X_test)
+print("\n Accuracy:", accuracy_score(y_test, y_pred))
+print("\n Classification Report:\n", classification_report(y_test, y_pred))
+
+
+sample_index = 5
+print("\n Sample Prediction:")
+print("Predicted:", model.predict([X[sample_index]])[0])
+print("Actual   :", y[sample_index])
+print("Image Data (Flattened Pixels):", X[sample_index])
